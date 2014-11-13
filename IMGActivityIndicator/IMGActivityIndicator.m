@@ -9,7 +9,7 @@
 #import "IMGActivityIndicator.h"
 
 static const CGFloat IMGCircleLineWidth = 1.65;
-static const CGFloat IMGDuration = 1.65; // Duration for every stroke cycle
+static const CGFloat IMGDuration = 1.4; // Duration for every stroke cycle
 
 // Helper Function to get center of CGRect
 CGPoint CGRectGetCenter(CGRect rect)
@@ -94,7 +94,7 @@ CGPoint CGRectGetCenter(CGRect rect)
 
     // Use a CADisplayLink timer to fire every time we need to reloop both stroke start and end animation.
     self.timer = [CADisplayLink displayLinkWithTarget:self selector:@selector(loopAnimations)];
-    self.timer.frameInterval = 60 * 2 *  IMGDuration;
+    self.timer.frameInterval = 60 * 2 * IMGDuration;
     [self.timer addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
 }
 
@@ -110,7 +110,7 @@ CGPoint CGRectGetCenter(CGRect rect)
         
         CABasicAnimation *strokeStartAnimation = [CABasicAnimation animationWithKeyPath:@"strokeStart"];
         strokeStartAnimation.fromValue = @0;
-        strokeStartAnimation.toValue = @1.2;
+        strokeStartAnimation.toValue = @1.08;
         strokeStartAnimation.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseIn];
         strokeStartAnimation.beginTime = CACurrentMediaTime() + timeDuration;
         strokeStartAnimation.duration = IMGDuration;
@@ -118,7 +118,7 @@ CGPoint CGRectGetCenter(CGRect rect)
         
         CABasicAnimation *strokEndAnimation  = [CABasicAnimation animationWithKeyPath:@"strokeEnd"];
         strokEndAnimation.fromValue = @0;
-        strokEndAnimation.toValue = @1.2;
+        strokEndAnimation.toValue = @1.08;
         strokEndAnimation.duration = IMGDuration;
         strokEndAnimation.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseOut];
         strokEndAnimation.beginTime = CACurrentMediaTime() + timeDuration + IMGDuration;
