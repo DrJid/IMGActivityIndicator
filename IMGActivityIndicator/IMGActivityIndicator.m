@@ -8,8 +8,7 @@
 
 #import "IMGActivityIndicator.h"
 
-
-static const CGFloat IMGCircleLineWidth = 1.5;
+static const CGFloat IMGCircleLineWidth = 1.65;
 static const CGFloat IMGDuration = 1.65; // Duration for every stroke cycle
 
 // Helper Function to get center of CGRect
@@ -32,7 +31,7 @@ CGPoint CGRectGetCenter(CGRect rect)
 {
     self = [super initWithFrame:frame];
     if (self) {
-        _strokeColor = [UIColor blackColor];
+        _strokeColor = [UIColor whiteColor];
         [self createLayers];
     }
     return self;
@@ -41,7 +40,7 @@ CGPoint CGRectGetCenter(CGRect rect)
 - (id)initWithCoder:(NSCoder *)aDecoder {
     self = [super initWithCoder:aDecoder];
     if (self) {
-        _strokeColor = [UIColor blackColor];
+        _strokeColor = [UIColor whiteColor];
         [self createLayers];
     }
     return self;
@@ -54,7 +53,6 @@ CGPoint CGRectGetCenter(CGRect rect)
     backgroundView.backgroundColor = [UIColor colorWithWhite:0.1 alpha:1];
     
     self.shapeLayers = [NSMutableArray new];
-    
     
     // Draw the middle dot.
     UIBezierPath *dot =[UIBezierPath bezierPathWithArcCenter:CGRectGetCenter(backgroundView.frame)
@@ -69,12 +67,11 @@ CGPoint CGRectGetCenter(CGRect rect)
     [backgroundView.layer addSublayer:dotLayer];
     
     self.strokeTimings = @[@0.35, @0.50, @0.65, @0.80, @0.95];
-    
     NSArray *radii = @[@16, @13, @10, @7, @4];
     
-    
+    // Draw our looping stroke lines
     for (int i = 0; i < 5; i++) {
-        CAShapeLayer *firstCircleLayer = [CAShapeLayer layer];
+        CAShapeLayer *circleLayer = [CAShapeLayer layer];
         CGFloat radius = [radii[i] floatValue];
         UIBezierPath *path = [UIBezierPath bezierPathWithArcCenter:CGRectGetCenter(backgroundView.frame)
                                                             radius:radius
@@ -82,29 +79,23 @@ CGPoint CGRectGetCenter(CGRect rect)
                                                           endAngle:1.5 * M_PI
                                                          clockwise:YES];
         
-        firstCircleLayer.path = path.CGPath;
-        firstCircleLayer.strokeColor = [UIColor whiteColor].CGColor;
-        firstCircleLayer.lineWidth = IMGCircleLineWidth;
-        firstCircleLayer.fillColor = nil;
-        firstCircleLayer.contentsScale = [UIScreen mainScreen].scale;
+        circleLayer.path = path.CGPath;
+        circleLayer.strokeColor = self.strokeColor.CGColor;
+        circleLayer.lineWidth = IMGCircleLineWidth;
+        circleLayer.fillColor = nil;
+        circleLayer.contentsScale = [UIScreen mainScreen].scale;
         
-        [self.shapeLayers addObject:firstCircleLayer];
-        [backgroundView.layer addSublayer:firstCircleLayer];
+        [self.shapeLayers addObject:circleLayer];
+        [backgroundView.layer addSublayer:circleLayer];
     }
     
     [self addSubview:backgroundView];
     [self loopAnimations];
-    
-    //    NSTimer *timer  = [NSTimer scheduledTimerWithTimeInterval:3.33 target:self selector:@selector(loopAnimations) userInfo:nil repeats:YES];
-    
+
+    // Use a CADisplayLink timer to fire every time we need to reloop both stroke start and end animation.
     self.timer = [CADisplayLink displayLinkWithTarget:self selector:@selector(loopAnimations)];
-    
-    // We want this timer to fire every 3.33 seconds. 199.8/60 frames = 3.333
-    self.timer.frameInterval = 199.8;
-    
-    [self.timer addToRunLoop:[NSRunLoop currentRunLoop]
-                     forMode:NSDefaultRunLoopMode];
-    
+    self.timer.frameInterval = 60 * 2 *  IMGDuration;
+    [self.timer addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
 }
 
 /*
@@ -115,7 +106,6 @@ CGPoint CGRectGetCenter(CGRect rect)
     for (int i = 0; i < 5; i++) {
         
         CAShapeLayer *circleLayer = self.shapeLayers[i];
-        
         CGFloat timeDuration =  [self.strokeTimings[i] floatValue];
         
         CABasicAnimation *strokeStartAnimation = [CABasicAnimation animationWithKeyPath:@"strokeStart"];
@@ -126,16 +116,14 @@ CGPoint CGRectGetCenter(CGRect rect)
         strokeStartAnimation.duration = IMGDuration;
         [circleLayer addAnimation:strokeStartAnimation forKey:nil];
         
-        
         CABasicAnimation *strokEndAnimation  = [CABasicAnimation animationWithKeyPath:@"strokeEnd"];
         strokEndAnimation.fromValue = @0;
         strokEndAnimation.toValue = @1.2;
         strokEndAnimation.duration = IMGDuration;
         strokEndAnimation.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseOut];
-        strokEndAnimation.beginTime = CACurrentMediaTime() + timeDuration + 1.65;
+        strokEndAnimation.beginTime = CACurrentMediaTime() + timeDuration + IMGDuration;
         [circleLayer addAnimation:strokEndAnimation forKey:nil];
     }
 }
-
 
 @end
